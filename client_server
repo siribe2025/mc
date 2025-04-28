@@ -1,0 +1,78 @@
+#Server.py
+
+import socket
+
+IP = socket.gethostbyname(socket.gethostname())
+PORT = 4455  # Make sure port matches client and server
+ADDR = (IP, PORT)
+SIZE = 1024
+FORMAT = "utf-8"
+
+def main():
+    print("[STARTING] Server is starting.")
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(ADDR)
+    server.listen()
+    print("[LISTENING] Server is listening.")
+    
+    while True:
+        conn, addr = server.accept()
+        print(f"[NEW CONNECTION] {addr} connected.")
+
+        filename = conn.recv(SIZE).decode(FORMAT)
+        print(f"[RECV] Receiving the filename: {filename}")
+        conn.send("Filename received.".encode(FORMAT))
+
+        with open(filename, "w") as file:
+            data = conn.recv(SIZE).decode(FORMAT)
+            file.write(data)
+
+        conn.send("Data received.".encode(FORMAT))
+        print(f"[FILE RECEIVED] File {filename} received from {addr}.")
+
+        conn.close()
+        print(f"[DISCONNECTED] {addr} disconnected.")
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+#client.py
+
+import socket
+
+IP = socket.gethostbyname(socket.gethostname())
+PORT = 4455  # Same port as server
+ADDR = (IP, PORT)
+FORMAT = "utf-8"
+SIZE = 1024
+
+def main():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(ADDR)
+
+    file = open("Data/yt.txt", "r")  # Make sure this file exists
+    data = file.read()
+
+    client.send("yt.txt".encode(FORMAT))
+    msg = client.recv(SIZE).decode(FORMAT)
+    print(f"[SERVER]: {msg}")
+
+    client.send(data.encode(FORMAT))
+    msg = client.recv(SIZE).decode(FORMAT)
+    print(f"[SERVER]: {msg}")
+
+    file.close()
+    client.close()
+
+if __name__ == "__main__":
+    main()
+
+
+#create Data folder and create yt.txt in that folder.
+#commands
+#python server.py
+#python client.py
